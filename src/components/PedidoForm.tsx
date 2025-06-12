@@ -1,13 +1,15 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getClientes, getProducts, Client, Product } from '@/lib/api';
+import { getClientes, getProducts, Client, Product, createPedido, getPedidos
+
+ } from '@/lib/api';
 
 export default function PedidoForm() {
   const router = useRouter();
   const [clientes, setClientes] = useState<Client[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
-  const [clienteId, setClienteId] = useState<number>();
+  const [clienteId, setClienteId] = useState<number | null>(null);
   const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
 
   useEffect(() => {
@@ -17,20 +19,23 @@ export default function PedidoForm() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!clienteId || selectedProducts.length === 0) return;
+    if (clienteId === null || selectedProducts.length === 0) return;
 
-    const response = await fetch('/api/orders', { // Envia para o backend em Spring
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ clienteId, productIds: selectedProducts }),
-    });
+    const orderData = {
+      clientId: clienteId, // Envia o ID do cliente diretamente
+      productIds: selectedProducts, // Envia os IDs dos produtos diretamente
+      ok: true, // Adiciona a propriedade 'ok' conforme exigido pela interface
+    };
 
-    if (response.ok) {
+    const result = await createPedido(orderData);
+    if (!result) {
+      console.error('Erro ao criar pedido');
+      return;
+    }
+    if (result.ok) {
       router.push('/pedidos');
     } else {
-      console.error('Erro ao criar pedido:', await response.text());
+      console.error('Erro ao criar pedido:', result.ok ? 'Erro desconhecido' : 'Detalhes do erro não disponíveis');
     }
   }
 

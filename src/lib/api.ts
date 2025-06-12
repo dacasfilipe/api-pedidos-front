@@ -5,7 +5,9 @@ const BASE = process.env.NEXT_PUBLIC_API_URL!;
 // Interfaces
 export interface Product { id: number; name: string; price: number; }
 export interface Client { id: number; name: string; email: string; }
-export interface Order { id: number; clientId: number; productIds: number[]; orderDate: string; }
+export interface Order {
+    ok: any; id: number; clientId: number; productIds: number[]; orderDate: string; 
+}
 
 // Produtos
 export const getProducts = async (): Promise<Product[]> =>
